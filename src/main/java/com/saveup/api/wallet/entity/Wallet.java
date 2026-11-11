@@ -1,5 +1,7 @@
 package com.saveup.api.wallet.entity;
 
+import com.saveup.api.shared.exception.InsufficientBalanceException;
+import com.saveup.api.transaction.entity.Transaction;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -64,5 +66,24 @@ public class Wallet {
             throw new IllegalArgumentException("Wallet name cannot exceed 100 characters");
         }
         this.name = newName;
+    }
+    public void deposit(BigDecimal amount) {
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Amount must be greater than zero");
+        }
+
+        this.balance = this.balance.add(amount);
+    }
+
+    public void withdraw(BigDecimal amount) {
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Amount must be greater than zero");
+        }
+
+        if (balance.compareTo(amount) < 0) {
+            throw new InsufficientBalanceException("Insufficient balance");
+        }
+
+        this.balance = this.balance.subtract(amount);
     }
 }
