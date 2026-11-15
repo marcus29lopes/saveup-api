@@ -1,0 +1,2 @@
+ALTER TABLE wallet
+    ALTER COLUMN user_id TYPE BIGINT;

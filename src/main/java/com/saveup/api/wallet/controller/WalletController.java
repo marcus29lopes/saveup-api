@@ -8,6 +8,7 @@ import com.saveup.api.wallet.service.WalletService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,30 +30,44 @@ public class WalletController {
     }
 
     @PostMapping
-    public ResponseEntity<WalletResponse> createWallet(@Valid @RequestBody WalletCreateRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(walletService.createWallet(request));
+    public ResponseEntity<WalletResponse> createWallet(@Valid @RequestBody WalletCreateRequest request, Authentication authentication) {
+        String email = authentication.getName();
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(walletService.createWallet(request, email));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<WalletResponse> getWallet(@PathVariable Long id) {
-        return ResponseEntity.status(HttpStatus.OK).body(walletService.findById(id));
+    public ResponseEntity<WalletResponse> getWallet(@PathVariable Long id, Authentication authentication) {
+        String email = authentication.getName();
+
+        return ResponseEntity.status(HttpStatus.OK).body(walletService.findByIdAndUser(id, email));
     }
 
     @GetMapping
-    public ResponseEntity<List<WalletResponse>> getAllWallets() {
-        return ResponseEntity.status(HttpStatus.OK).body(walletService.findAll());
+    public ResponseEntity<List<WalletResponse>> getAllWallets(
+            Authentication authentication
+    ) {
+        String email = authentication.getName();
+
+        return ResponseEntity.ok(
+                walletService.findAll(email)
+        );
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<WalletResponse> updateWallet(
             @PathVariable Long id,
-            @Valid @RequestBody WalletUpdateRequest request) {
+            @Valid @RequestBody WalletUpdateRequest request,Authentication authentication){
+        String email = authentication.getName();
 
-        return ResponseEntity.status(HttpStatus.OK).body(walletService.updateWallet(id, request));
+        return ResponseEntity.status(HttpStatus.OK).body(walletService.updateWallet(id, request,email));
     }
+
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteWallet(@PathVariable Long id) {
-        walletService.deleteWallet( id);
+    public ResponseEntity<Void> deleteWallet(@PathVariable Long id,Authentication authentication) {
+        String email = authentication.getName();
+
+        walletService.deleteWallet(id,email);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 

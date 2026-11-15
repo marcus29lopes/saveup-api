@@ -2,11 +2,15 @@ package com.saveup.api.wallet.entity;
 
 import com.saveup.api.shared.exception.InsufficientBalanceException;
 import com.saveup.api.transaction.entity.Transaction;
+import com.saveup.api.user.entity.ApiUser;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 import java.math.BigDecimal;
@@ -29,15 +33,36 @@ public class Wallet {
     @Column(name = "created_at")
     private Instant createdAt;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
+    private ApiUser user;
+
     protected Wallet() {
 
     }
 
-    public Wallet(String name) {
+    public Wallet(String name, ApiUser user) {
+
         if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("Wallet name cannot be empty");
+            throw new IllegalArgumentException(
+                    "Wallet name cannot be empty"
+            );
         }
+
+        if (name.length() > 100) {
+            throw new IllegalArgumentException(
+                    "Wallet name cannot exceed 100 characters"
+            );
+        }
+
+        if (user == null) {
+            throw new IllegalArgumentException(
+                    "Wallet owner cannot be null"
+            );
+        }
+
         this.name = name;
+        this.user = user;
         this.balance = BigDecimal.ZERO;
         this.createdAt = Instant.now();
     }
