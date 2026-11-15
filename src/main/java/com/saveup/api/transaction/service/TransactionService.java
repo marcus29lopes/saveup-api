@@ -7,7 +7,6 @@ import com.saveup.api.transaction.repository.TransactionRepository;
 import com.saveup.api.wallet.entity.Wallet;
 import com.saveup.api.wallet.repository.WalletRepository;
 import jakarta.transaction.Transactional;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -24,9 +23,9 @@ public class TransactionService {
     }
 
     @Transactional
-    public void deposit(Long walletId, BigDecimal amount, String description) {
+    public void deposit(Long walletId, BigDecimal amount, String description, String email) {
 
-        Wallet wallet = walletRepository.findById(walletId)
+        Wallet wallet = walletRepository.findByIdAndUser_Email(walletId, email)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Wallet not found: " + walletId));
 
@@ -43,8 +42,8 @@ public class TransactionService {
     }
 
     @Transactional
-    public void withdraw(Long walletId, BigDecimal amount, String description) {
-        Wallet wallet = walletRepository.findById(walletId)
+    public void withdraw(Long walletId, BigDecimal amount, String description, String email) {
+        Wallet wallet = walletRepository.findByIdAndUser_Email(walletId, email)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Wallet not found: " + walletId));
         wallet.withdraw(amount);
@@ -58,10 +57,13 @@ public class TransactionService {
 
     }
 
-    public List<TransactionResponse> getAll(Long walletId) {
-        if (!walletRepository.existsById(walletId)) {
-            throw new ResourceNotFoundException("Wallet not found: " + walletId);
-        }
+    public List<TransactionResponse> getAll(Long walletId,String email) {
+        walletRepository.findByIdAndUser_Email(walletId, email)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Wallet not found: " + walletId
+                        )
+                );
         return transactionRepository.findAllTransactionsDesc(walletId).stream().map(
                 this::toResponse
         ).toList();
@@ -72,3 +74,6 @@ public class TransactionService {
         return new TransactionResponse(t.getId(), t.getType(), t.getDescription(), t.getAmount(), t.getCreatedAt());
     }
 }
+
+
+

@@ -7,6 +7,7 @@ import com.saveup.api.transaction.service.TransactionService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,12 +31,14 @@ public class TransactionController {
     @PostMapping("/{walletId}")
     public ResponseEntity<Void> createTransaction(@RequestParam Transaction.TransactionType type,
                                                   @Valid @RequestBody TransactionRequest transactionRequest,
-                                                  @PathVariable Long walletId) {
+                                                  @PathVariable Long walletId,
+                                                  Authentication authentication) {
+        String email = authentication.getName();
         switch (type) {
             case DEPOSIT ->
-                    transactionService.deposit(walletId, transactionRequest.amount(), transactionRequest.description());
+                    transactionService.deposit(walletId, transactionRequest.amount(), transactionRequest.description(), email);
             case WITHDRAWAL ->
-                    transactionService.withdraw(walletId, transactionRequest.amount(), transactionRequest.description());
+                    transactionService.withdraw(walletId, transactionRequest.amount(), transactionRequest.description(), email);
         }
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
@@ -44,8 +47,10 @@ public class TransactionController {
 
     @GetMapping("/wallet/{walletId}")
     public ResponseEntity<List<TransactionResponse>> getAllTransactions(
-            @PathVariable Long walletId) {
+            @PathVariable Long walletId,
+            Authentication authentication) {
+        String email = authentication.getName();
 
-        return ResponseEntity.status(HttpStatus.OK).body(transactionService.getAll(walletId));
+        return ResponseEntity.status(HttpStatus.OK).body(transactionService.getAll(walletId, email));
     }
 }
