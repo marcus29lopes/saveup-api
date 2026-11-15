@@ -7,6 +7,11 @@ import com.saveup.api.transaction.repository.TransactionRepository;
 import com.saveup.api.wallet.entity.Wallet;
 import com.saveup.api.wallet.repository.WalletRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.SortArgumentResolver;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -45,7 +50,7 @@ public class TransactionService {
     public void withdraw(Long walletId, BigDecimal amount, String description, String email) {
         Wallet wallet = walletRepository.findByIdAndUser_Email(walletId, email)
                 .orElseThrow(() ->
-                        new ResourceNotFoundException("Wallet not found: " + walletId));
+                        new ResourceNotFoundException("Wallet not        found: " + walletId));
         wallet.withdraw(amount);
         Transaction transaction = new Transaction(
                 wallet,
@@ -57,16 +62,20 @@ public class TransactionService {
 
     }
 
-    public List<TransactionResponse> getAll(Long walletId,String email) {
+    public Page<TransactionResponse> getAll(Long walletId, String email, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt")
+        );
+
         walletRepository.findByIdAndUser_Email(walletId, email)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "Wallet not found: " + walletId
                         )
                 );
-        return transactionRepository.findAllTransactionsDesc(walletId).stream().map(
+
+        return transactionRepository.findAllTransactionsDesc(walletId, pageable).map(
                 this::toResponse
-        ).toList();
+        );
 
     }
 

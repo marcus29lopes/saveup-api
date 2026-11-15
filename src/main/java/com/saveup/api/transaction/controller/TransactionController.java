@@ -5,6 +5,7 @@ import com.saveup.api.transaction.dto.TransactionResponse;
 import com.saveup.api.transaction.entity.Transaction;
 import com.saveup.api.transaction.service.TransactionService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -15,8 +16,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/transaction")
@@ -46,11 +45,16 @@ public class TransactionController {
     }
 
     @GetMapping("/wallet/{walletId}")
-    public ResponseEntity<List<TransactionResponse>> getAllTransactions(
+    public ResponseEntity<Page<TransactionResponse>> getAllTransactions(
             @PathVariable Long walletId,
-            Authentication authentication) {
+            Authentication authentication,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
         String email = authentication.getName();
 
-        return ResponseEntity.status(HttpStatus.OK).body(transactionService.getAll(walletId, email));
+        return ResponseEntity.ok(
+                transactionService.getAll(walletId, email, page, size)
+        );
     }
 }
