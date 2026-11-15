@@ -2,6 +2,7 @@ spring:
   application:
     name: saveup-api
 
+
   datasource:
     url: ${DB_URL}
     username: ${DB_USERNAME}
@@ -22,3 +23,9 @@ spring:
 
 server:
   port: 8080
+
+
+app:
+  jwt:
+    secret: ${JWT_SECRET}
+    expiration-minutes: 60
