@@ -35,9 +35,9 @@ public class TransactionController {
         String email = authentication.getName();
         switch (type) {
             case DEPOSIT ->
-                    transactionService.deposit(walletId, transactionRequest.amount(), transactionRequest.description(), email);
+                    transactionService.deposit(walletId, transactionRequest.amount(), transactionRequest.description(), email, transactionRequest.categoryId());
             case WITHDRAWAL ->
-                    transactionService.withdraw(walletId, transactionRequest.amount(), transactionRequest.description(), email);
+                    transactionService.withdraw(walletId, transactionRequest.amount(), transactionRequest.description(), email, transactionRequest.categoryId());
         }
 
         return ResponseEntity.status(HttpStatus.CREATED).build();

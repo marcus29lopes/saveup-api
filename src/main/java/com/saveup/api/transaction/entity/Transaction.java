@@ -1,5 +1,6 @@
 package com.saveup.api.transaction.entity;
 
+import com.saveup.api.category.entity.Categories;
 import com.saveup.api.wallet.entity.Wallet;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -42,10 +43,18 @@ public class Transaction {
     @JoinColumn(name = "wallet_id")
     private Wallet wallet;
 
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    private Categories categories;
+
+    public Categories getCategories() {
+        return categories;
+    }
+
     protected Transaction() {
     }
 
-    public Transaction(Wallet wallet, TransactionType type, BigDecimal amount, String description) {
+    public Transaction(Wallet wallet, TransactionType type, BigDecimal amount, String description, Categories categories) {
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Amount must be greater than zero");
         }
@@ -61,6 +70,7 @@ public class Transaction {
         this.type = type;
         this.amount = amount;
         this.description = description;
+        this.categories = categories;
     }
 
     public enum TransactionType {
