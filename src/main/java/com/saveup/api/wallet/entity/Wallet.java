@@ -100,6 +100,10 @@ public class Wallet {
         this.balance = this.balance.add(amount);
     }
 
+    public ApiUser getUser() {
+        return user;
+    }
+
     public void withdraw(BigDecimal amount) {
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Amount must be greater than zero");
