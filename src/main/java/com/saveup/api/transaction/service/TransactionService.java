@@ -3,6 +3,7 @@ package com.saveup.api.transaction.service;
 import com.saveup.api.category.entity.Categories;
 import com.saveup.api.category.repository.CategoriesRepository;
 import com.saveup.api.shared.exception.ResourceNotFoundException;
+import com.saveup.api.transaction.dto.ReportCategoriesResponse;
 import com.saveup.api.transaction.dto.TransactionResponse;
 import com.saveup.api.transaction.entity.Transaction;
 import com.saveup.api.transaction.repository.TransactionRepository;
@@ -17,6 +18,9 @@ import org.springframework.data.web.SortArgumentResolver;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 
 @Service
@@ -93,9 +97,50 @@ public class TransactionService {
     }
 
     private TransactionResponse toResponse(Transaction t) {
-        return new TransactionResponse(t.getId(), t.getType(), t.getDescription(), t.getAmount(), t.getCreatedAt(),t.getCategories().getName());
+        return new TransactionResponse(t.getId(), t.getType(), t.getDescription(), t.getAmount(), t.getCreatedAt(), t.getCategories().getName());
+    }
+
+    @Transactional
+    public List<ReportCategoriesResponse> getReportCategories(
+            Long walletId,
+            String email,
+            LocalDate dtStart,
+            LocalDate dtEnd,
+            Transaction.TransactionType type
+    ) {
+        walletRepository.findByIdAndUser_Email(walletId, email)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Wallet not found: " + walletId
+                        )
+                );
+
+        if (dtStart.isAfter(dtEnd)) {
+            throw new IllegalArgumentException(
+                    "Start date cannot be after end date"
+            );
+        }
+
+        ZoneId zone = ZoneId.of("America/Sao_Paulo");
+
+        Instant start = dtStart
+                .atStartOfDay(zone)
+                .toInstant();
+
+        Instant end = dtEnd
+                .plusDays(1)
+                .atStartOfDay(zone)
+                .toInstant();
+
+        return transactionRepository.findSummaryTransactionsByType(
+                walletId,
+                type,
+                start,
+                end
+        );
     }
 }
+
 
 
 
